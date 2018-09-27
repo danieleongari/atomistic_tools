@@ -56,7 +56,10 @@ def read_cp2k_input(cp2k_input_file):
                     cell[2] = float(parts[3])
 
             if parts[0] == "A" or parts[0] == "B" or parts[0] == "C":
-                prim_vec = np.array([float(x) for x in parts[1:]])
+                if parts[1] == "[angstrom]":
+                  prim_vec = np.array([float(x) for x in parts[2:]])
+                else:
+                  prim_vec = np.array([float(x) for x in parts[2:]])
                 if np.sum(prim_vec > 0.0) > 1:
                     raise ValueError("Cell is not rectangular")
                 ind = np.argmax(prim_vec > 0.0)
@@ -192,8 +195,7 @@ def read_basis_functions(basis_set_file, elem_basis_name):
 ### RESTART file loading and processing
 ### ---------------------------------------------------------------------------
 
-
-def load_restart_wfn_file(restart_file, emin, emax, mpi_rank, mpi_size):
+def load_restart_wfn_file(file_restart, emin, emax, mpi_rank, mpi_size):
     """ Reads the molecular orbitals from cp2k restart wavefunction file in specified energy range
     Note that the energy range is in eV and with respect to HOMO energy.
     
@@ -204,7 +206,7 @@ def load_restart_wfn_file(restart_file, emin, emax, mpi_rank, mpi_size):
     homo_inds[ispin] = homo_index_for_ispin
     """
 
-    inpf = scipy.io.FortranFile(restart_file, 'r')
+    inpf = scipy.io.FortranFile(file_restart, 'r')
 
     natom, nspin, nao, nset_max, nshell_max = inpf.read_ints()
     #print(natom, nspin, nao, nset_max, nshell_max)
